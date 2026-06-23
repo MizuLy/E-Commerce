@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+model Users {
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  password String
+  isVerified Boolean @default(false)
+  role RoleList @default(CUSTOMER)
+  phone String?
+  address String?
+  imageUrl String?
+
+  createdAt DateTime @default(now())
+
+  order Orders[]
+}
+
+model Products {
+  id String @id @default(uuid())
+  name String
+  description String 
+  price Float
+  stockQuantity Int
+  imageUrl String
+
+  createdAt DateTime @default(now())
+
+  orderItem OrderItems[]
+}
+
+model Orders {
+  id String @id @default(uuid())
+  userId String
+  total Float // Total price
+  status StatusList
+
+  createdAt DateTime @default(now())
+
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderItem OrderItems[]
+  payment Payments?
+}
+
+model OrderItems {
+  id String @id @default(uuid())
+  orderId String
+  productId String
+  quantity Int
+  unitPrice Float
+
+  createdAt DateTime @default(now())
+
+  order Orders @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Products @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Payments {
+  id String @id @default(uuid())
+  orderId String @unique
+  amount Float
+  status PaymentList
+
+  createdAt DateTime @default(now())
+
+  order Orders @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Otps {
+  id String @id @default(uuid())
+  email String
+  otp String
+  expiresAt DateTime
+  
+  createdAt DateTime @default(now())
+}
+
+enum StatusList {
+  PENDING
+  SHIPPING
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentList{
+  PENDING
+  PAID
+  CANCELLED
+}
+
+enum RoleList{
+  CUSTOMER
+  ADMIN
+}
