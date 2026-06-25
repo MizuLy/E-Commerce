@@ -33,6 +33,16 @@ const addOrder = async (req, res) => {
       ),
     );
 
+    // Increment soldCount
+    await Promise.all(
+      items.map(({ productId, quantity }) =>
+        prisma.products.update({
+          where: { id: productId },
+          data: { soldCount: { increment: quantity } },
+        }),
+      ),
+    );
+
     // Calculate total
     const total = items.reduce((sum, item) => {
       const product = products.find((p) => p.id === item.productId);

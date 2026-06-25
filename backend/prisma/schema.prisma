@@ -36,6 +36,11 @@ model Products {
   price Float
   stockQuantity Int
   imageUrl String
+  category String @default("uncategorized")
+  featured Boolean @default(false)
+  discountPrice Float?
+  views Int @default(0)
+  soldCount Int @default(0)
 
   createdAt DateTime @default(now())
 

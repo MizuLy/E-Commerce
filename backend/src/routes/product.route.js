@@ -4,6 +4,7 @@ const {
   getProducts,
   updateProduct,
   removeProduct,
+  incrementView,
 } = require("../controllers/product.controller");
 const verifyToken = require("../middlewares/verifyToken");
 const upload = require("../config/multer");
@@ -14,5 +15,6 @@ router.post("/", verifyToken, upload.single("imageUrl"), addProduct);
 router.get("/", getProducts); // /api/products?page=1-100
 router.patch("/:id", verifyToken, upload.single("imageUrl"), updateProduct);
 router.delete("/:id", verifyToken, removeProduct);
+router.patch("/:id/view", incrementView);
 
 module.exports = router;

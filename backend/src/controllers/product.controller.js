@@ -3,10 +3,18 @@ const uploadImage = require("../utils/uploadImage");
 
 const addProduct = async (req, res) => {
   try {
-    const { name, description, price, stockQuantity } = req.body;
+    const {
+      name,
+      description,
+      price,
+      stockQuantity,
+      category,
+      featured,
+      discountPrice,
+    } = req.body;
     let imageUrl;
 
-    if (!name || !price || !stockQuantity || !req.file)
+    if (!name || !price || !stockQuantity || !category || !req.file)
       return res.status(400).json({ error: "All fields are required" });
 
     if (req.file) {
@@ -20,6 +28,9 @@ const addProduct = async (req, res) => {
         price: parseFloat(price), // parseFloat cuz it count as string in form-data
         stockQuantity: parseInt(stockQuantity), // Same thing
         imageUrl,
+        category,
+        featured: featured === "true" || false,
+        discountPrice: discountPrice ? parseFloat(discountPrice) : null,
       },
     });
 
@@ -41,14 +52,25 @@ const addProduct = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
+    const { category, featured, sort } = req.query;
+
     const page = parseInt(req.query.page) || 1; // which page, default 1
     const limit = parseInt(req.query.limit) || 8; // how many per page, default 8
     const skip = (page - 1) * limit; // how many products to skip
 
+    const where = {};
+    if (category) where.category = category;
+    if (featured === "true") where.featured = true;
+
+    const orderBy = {};
+    if (sort === "popular") orderBy.soldCount = "desc";
+    if (sort === "trending") orderBy.views = "desc";
+    if (sort === "new") orderBy.createdAt = "desc";
+
     // run both queries at the same time (faster)
     const [products, total] = await Promise.all([
-      prisma.products.findMany({ skip, take: limit }), // fetch 8 products
-      prisma.products.count(), // count total products
+      prisma.products.findMany({ where, orderBy, skip, take: limit }), // fetch 8 products
+      prisma.products.count({ where }), // count total products
     ]);
 
     res.status(200).json({
@@ -68,7 +90,15 @@ const getProducts = async (req, res) => {
 
 const updateProduct = async (req, res) => {
   try {
-    const { name, description, price, stockQuantity } = req.body;
+    const {
+      name,
+      description,
+      price,
+      stockQuantity,
+      category,
+      featured,
+      discountPrice,
+    } = req.body;
 
     const product = await prisma.products.findUnique({
       where: { id: req.params.id },
@@ -77,11 +107,20 @@ const updateProduct = async (req, res) => {
     if (!product) return res.status(404).json({ error: "Product not found" });
 
     const updateData = {};
+
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
     if (price !== undefined) updateData.price = parseFloat(price);
     if (stockQuantity !== undefined)
       updateData.stockQuantity = parseInt(stockQuantity);
+    if (category !== undefined) updateData.category = category;
+    if (featured !== undefined)
+      updateData.featured = featured === "true" || false;
+    if (discountPrice !== undefined)
+      updateData.discountPrice = discountPrice
+        ? parseFloat(discountPrice)
+        : null;
+
     if (req.file) updateData.imageUrl = await uploadImage(req.file.buffer);
 
     const result = await prisma.products.update({
@@ -99,6 +138,11 @@ const updateProduct = async (req, res) => {
         price: result.price,
         stockQuantity: result.stockQuantity,
         imageUrl: result.imageUrl,
+        category: result.category,
+        featured: result.featured,
+        discountPrice: result.discountPrice,
+        views: result.views,
+        soldCount: result.soldCount,
       },
     });
   } catch (err) {
@@ -124,4 +168,23 @@ const removeProduct = async (req, res) => {
   }
 };
 
-module.exports = { addProduct, getProducts, updateProduct, removeProduct };
+const incrementView = async (req, res) => {
+  try {
+    const product = await prisma.products.update({
+      where: { id: req.params.id },
+      data: { views: { increment: 1 } },
+    });
+
+    res.json({ status: "success", data: product });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+module.exports = {
+  addProduct,
+  getProducts,
+  updateProduct,
+  removeProduct,
+  incrementView,
+};

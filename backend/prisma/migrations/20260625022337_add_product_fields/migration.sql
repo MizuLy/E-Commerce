@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "Products" ADD COLUMN     "category" TEXT NOT NULL DEFAULT 'uncategorized',
+ADD COLUMN     "discountPrice" DOUBLE PRECISION,
+ADD COLUMN     "featured" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "soldCount" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "views" INTEGER NOT NULL DEFAULT 0;
