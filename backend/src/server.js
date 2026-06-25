@@ -1,6 +1,7 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
+const cors = require("cors");
 
 const { connectDB, disconnectDB } = require("./config/db");
 const { config } = require("dotenv");
@@ -18,6 +19,7 @@ connectDB();
 const PORT = process.env.PORT || 6969;
 const app = express();
 
+app.use(cors());
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(express.json());
