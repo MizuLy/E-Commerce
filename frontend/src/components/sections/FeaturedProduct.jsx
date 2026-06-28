@@ -80,7 +80,8 @@ export default function FeaturedProduct() {
               {/* Product Image Placeholder */}
               <div className="aspect-[3/4] w-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden transition-all duration-500 group-hover:border-zinc-700">
                 <span className="text-xs tracking-widest text-zinc-600 uppercase transform transition-transform duration-500 group-hover:scale-105">
-                  [ Image ]
+                  {/* [ Image ] */}
+                  <img src={products.imageUrl} alt="" />
                 </span>
               </div>
 
