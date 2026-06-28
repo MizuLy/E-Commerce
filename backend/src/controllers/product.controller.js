@@ -43,6 +43,7 @@ const addProduct = async (req, res) => {
         price: product.price,
         stockQuantity: product.stockQuantity,
         imageUrl: product.imageUrl,
+        category: product.category,
       },
     });
   } catch (err) {
