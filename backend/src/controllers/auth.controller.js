@@ -33,7 +33,7 @@ const register = async (req, res) => {
 
     // Confirmation sent
     await prisma.otps.create({ data: { email, otp: otpCode, expiresAt } });
-    sendOtp(email, otpCode).catch(console.error);
+    await sendOtp(email, otpCode).catch(console.error);
 
     res.status(201).json({
       status: "success",
